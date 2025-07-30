@@ -23,7 +23,6 @@ def clone_repo_in_sandbox(repo_url: str) -> Sandbox:
     # Check execution results
     if execution.error:
         print(f"❌ Execution error: {execution.error}")
-        sandbox.close()
         raise RuntimeError(f"Git clone failed with execution error: {execution.error}")
     
     # Get the output from logs
@@ -37,7 +36,6 @@ def clone_repo_in_sandbox(repo_url: str) -> Sandbox:
     
     # Check if clone was successful by looking for error indicators
     if "fatal" in output.lower() or "error" in output.lower():
-        sandbox.close()
         raise RuntimeError(f"Git clone failed: {output}")
     
     # Verify the clone by listing the workspace directory

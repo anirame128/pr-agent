@@ -69,6 +69,7 @@ async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool 
                 yield log
                 
             yield "✅ Plan application completed"
+                
         elif parsed_steps:
             yield "\n⚠️ Modifications disabled - plan would create/modify/delete files"
             yield "Enable modifications to apply changes"
