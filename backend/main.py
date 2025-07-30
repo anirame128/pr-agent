@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from sse_starlette.sse import EventSourceResponse
 import asyncio
-from agent.core import run_agent_flow
+from agent.agent_flow import run_agent_flow
 
 app = FastAPI()
 
@@ -12,7 +12,9 @@ async def code(request: Request):
     prompt = body["prompt"]
 
     async def event_generator():
-        async for event in run_agent_flow(repo_url, prompt):
+        async for event in run_agent_flow(repo_url, prompt):      
             yield {"event": "update", "data": event}
+    
+    return EventSourceResponse(event_generator())
     
     return EventSourceResponse(event_generator())
