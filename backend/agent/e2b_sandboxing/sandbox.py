@@ -140,3 +140,18 @@ for dirpath, _, filenames in os.walk("/workspace"):
             print(f"  - {file_path} ({content_length} chars)")
     
     return code_map
+
+def write_file_to_sandbox(sandbox: Sandbox, full_path: str, content: str):
+    """Write content to a file in the sandbox."""
+    sandbox.files.write(full_path, content)
+
+def delete_file_from_sandbox(sandbox: Sandbox, full_path: str):
+    """Delete a file from the sandbox."""
+    delete_code = f"""
+import os
+try:
+    os.remove("{full_path}")
+except FileNotFoundError:
+    pass
+"""
+    sandbox.run_code(delete_code)

@@ -3,6 +3,7 @@ from .e2b_sandboxing.sandbox import clone_repo_in_sandbox, read_codebase
 from .preprocessing.file_preprocess import preprocess_codebase
 from .llm_plan.llm import generate_plan, format_plan_as_markdown
 from .file_modification.plan_parsing import parse_plan
+from .file_modification.plan_application import apply_plan_steps
 
 async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool = False):
     """Main agent flow - simplified to use only sandbox functions"""
@@ -42,7 +43,7 @@ async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool 
 
         # Stream pretty version
         pretty_plan = format_plan_as_markdown(raw_plan)
-        #yield f"\n{pretty_plan}"
+        yield f"\n{pretty_plan}"
         
         # Step 6: Parse plan into structured steps
         yield "🔍 Parsing plan..."
@@ -57,6 +58,23 @@ async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool 
         else:
             yield "⚠️ No valid steps found in plan"
             
+        # Step 7: Apply the plan steps
+        if parsed_steps and enable_modifications:
+            yield "\n🔧 Applying plan steps..."
+            print(f"🔍 DEBUG: About to call apply_plan_steps with {len(parsed_steps)} steps")
+            application_logs = await apply_plan_steps(sandbox, parsed_steps, codebase_context)
+            print(f"🔍 DEBUG: apply_plan_steps completed, got {len(application_logs)} logs")
+            
+            for log in application_logs:
+                yield log
+                
+            yield "✅ Plan application completed"
+        elif parsed_steps:
+            yield "\n⚠️ Modifications disabled - plan would create/modify/delete files"
+            yield "Enable modifications to apply changes"
+        else:
+            yield "\n⚠️ No steps to apply"
+        
     except Exception as e:
         yield f"❌ Error in agent flow: {str(e)}"
         print(f"Agent flow error: {str(e)}")

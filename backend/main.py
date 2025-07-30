@@ -10,9 +10,10 @@ async def code(request: Request):
     body = await request.json()
     repo_url = body["repoUrl"]
     prompt = body["prompt"]
+    enable_modifications = body.get("enable_modifications", False)
 
     async def event_generator():
-        async for event in run_agent_flow(repo_url, prompt):      
+        async for event in run_agent_flow(repo_url, prompt, enable_modifications=enable_modifications):      
             yield {"event": "update", "data": event}
     
     return EventSourceResponse(event_generator())
