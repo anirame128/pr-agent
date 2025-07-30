@@ -1,5 +1,5 @@
 import asyncio
-from agent.sandbox import clone_repo_in_sandbox, log_sandbox_metrics
+from agent.sandbox import clone_repo_in_sandbox
 
 async def run_agent_flow(repo_url: str, prompt: str):
     yield "🔄 Cloning repository..."
@@ -9,8 +9,3 @@ async def run_agent_flow(repo_url: str, prompt: str):
     except Exception as e:
         yield f"❌ Failed to clone repo: {str(e)}"
         return
-    yield "🌿 Creating branch..."
-    await asyncio.sleep(1)
-    yield "🧠 Generating plan..."
-    await asyncio.sleep(1)
-    yield f"✅ PR ready for: {prompt}"
