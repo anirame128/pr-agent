@@ -1,7 +1,7 @@
-import asyncio
-import json
 from typing import AsyncGenerator
-from .sandbox import clone_repo_in_sandbox, read_codebase
+from .e2b_sandboxing.sandbox import clone_repo_in_sandbox, read_codebase
+from .preprocessing.file_preprocess import preprocess_codebase
+from .llm_plan.llm import generate_plan, format_plan_as_markdown
 
 async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool = False):
     """Main agent flow - simplified to use only sandbox functions"""
@@ -18,21 +18,30 @@ async def run_agent_flow(repo_url: str, prompt: str, enable_modifications: bool 
         yield f"✅ Read {len(code_files)} files from codebase"
         
         # Step 3: Basic analysis (just return file info for now)
-        yield "📋 **CODEBASE SUMMARY:**"
-        yield f"Total files: {len(code_files)}"
+        # yield "📋 **CODEBASE SUMMARY:**"
+        # yield f"Total files: {len(code_files)}"
         
-        if code_files:
-            yield "\n**Files found:**"
-            for file_path in sorted(code_files.keys()):
-                content_length = len(code_files[file_path])
-                yield f"- {file_path} ({content_length} characters)"
+        # if code_files:
+        #     yield "\n**Files found:**"
+        #     for file_path in sorted(code_files.keys()):
+        #         content_length = len(code_files[file_path])
+        #         yield f"- {file_path} ({content_length} characters)"
         
-        # Step 4: Simple prompt response (placeholder)
-        yield f"\n**User Prompt:** {prompt}"
-        yield "🤖 Analysis complete! (Using simplified sandbox-only flow)"
+        # Step 4: Preprocess codebase
+        yield "🔄 Preprocessing codebase..."
+        codebase_context = preprocess_codebase(code_files)
+        #print(len(codebase_context))
+        #print(codebase_context[:8000])
+        yield "✅ Codebase preprocessed"
         
-        # Note: Sandbox cleanup is handled automatically by E2B
-        yield "🧹 Sandbox cleanup handled automatically"
+        # Step 5: Generate plan
+        yield "🤖 Generating plan..."
+        raw_plan = generate_plan(codebase_context, prompt)
+        yield "✅ Plan generated"
+
+        # Stream pretty version
+        pretty_plan = format_plan_as_markdown(raw_plan)
+        yield f"\n{pretty_plan}"
             
     except Exception as e:
         yield f"❌ Error in agent flow: {str(e)}"

@@ -17,4 +17,3 @@ async def code(request: Request):
     
     return EventSourceResponse(event_generator())
     
-    return EventSourceResponse(event_generator())
