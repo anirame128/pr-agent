@@ -9,8 +9,8 @@ def clone_repo_in_sandbox(repo_url: str) -> Sandbox:
 
     print("🔐 Launching E2B Sandbox...")
     
-    # Create sandbox using context manager for automatic cleanup
-    sandbox = Sandbox()
+    # Create sandbox with extended timeout (30 minutes)
+    sandbox = Sandbox(timeout=1800)  # 30 minutes in seconds
     
     print(f"📁 Cloning repo into /workspace: {repo_url}")
     
@@ -121,21 +121,21 @@ for dirpath, _, filenames in os.walk("/workspace"):
     
     for file_path in file_paths:
         try:
-            print(f"📖 Reading {file_path}...")
+            # print(f"📖 Reading {file_path}...")
             content = sandbox.files.read(file_path)
             code_map[file_path] = content
-            print(f"✅ Read {file_path} ({len(content)} characters)")
+            # print(f"✅ Read {file_path} ({len(content)} characters)")
         except Exception as e:
             print(f"⚠️ Error reading {file_path}: {str(e)}")
     
-    print(f"✅ Successfully read {len(code_map)} files out of {len(file_paths)} found.")
+    # print(f"✅ Successfully read {len(code_map)} files out of {len(file_paths)} found.")
     
     # Print summary of what was read
-    if code_map:
-        print("\n📋 Files successfully read:")
-        for file_path in sorted(code_map.keys()):
-            content_length = len(code_map[file_path])
-            print(f"  - {file_path} ({content_length} chars)")
+    # if code_map:
+    #     print("\n📋 Files successfully read:")
+    #     for file_path in sorted(code_map.keys()):
+    #         content_length = len(code_map[file_path])
+    #         print(f"  - {file_path} ({content_length} chars)")
     
     return code_map
 
@@ -153,3 +153,60 @@ except FileNotFoundError:
     pass
 """
     sandbox.run_code(delete_code)
+
+def download_modified_files(sandbox: Sandbox, modified_files: Dict[str, str], output_dir: str = "downloads") -> str:
+    """
+    Download modified files from sandbox to local filesystem.
+    
+    Args:
+        sandbox: The E2B sandbox instance
+        modified_files: Dictionary mapping relative paths to file contents
+        output_dir: Local directory to save files to
+    
+    Returns:
+        Path to the output directory containing downloaded files
+    """
+    import os
+    import uuid
+    
+    # Create unique output directory with timestamp
+    timestamp = uuid.uuid4().hex[:8]
+    full_output_dir = os.path.join(output_dir, f"modified_files_{timestamp}")
+    os.makedirs(full_output_dir, exist_ok=True)
+    
+    print(f"📁 Downloading {len(modified_files)} modified files to: {full_output_dir}")
+    
+    downloaded_files = []
+    
+    for relative_path, content in modified_files.items():
+        try:
+            # Create the local file path
+            local_file_path = os.path.join(full_output_dir, relative_path)
+            
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+            
+            # Write the file content
+            with open(local_file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            downloaded_files.append(relative_path)
+            print(f"✅ Downloaded: {relative_path}")
+            
+        except Exception as e:
+            print(f"⚠️ Error downloading {relative_path}: {str(e)}")
+    
+    print(f"📦 Successfully downloaded {len(downloaded_files)} files to: {full_output_dir}")
+    
+    # Create a summary file
+    summary_path = os.path.join(full_output_dir, "DOWNLOAD_SUMMARY.txt")
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        f.write(f"Modified Files Download Summary\n")
+        f.write(f"==============================\n\n")
+        f.write(f"Total files downloaded: {len(downloaded_files)}\n")
+        f.write(f"Download timestamp: {timestamp}\n\n")
+        f.write("Files:\n")
+        for file_path in downloaded_files:
+            f.write(f"- {file_path}\n")
+    
+    return full_output_dir

@@ -1,0 +1,5 @@
+{
+  "fortnite": "docs/external/fortnite_search_notes.md",
+  "stripe": "docs/external/stripe_webhooks.md",
+  "pinecone": "docs/external/pinecone_indexing.md"
+} 

@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from typing import Dict, List
 
 # Optional import for accurate token counting
@@ -20,6 +21,7 @@ IGNORE_PATTERNS = [
 ]
 
 PRIORITY_ORDER = [
+    "External Research",
     "API Route",
     "Authentication",
     "Dashboard Page",
@@ -35,6 +37,36 @@ PRIORITY_ORDER = [
     "Documentation"
 ]
 
+def inject_external_context(prompt: str, code_map: Dict[str, str], registry_path=None):
+    """Inject external context files based on prompt keywords."""
+    if registry_path is None:
+        # Use path relative to this module's location
+        import os
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        registry_path = os.path.join(current_dir, "external_context_registry.json")
+    
+    try:
+        with open(registry_path, "r") as f:
+            registry = json.load(f)
+    except FileNotFoundError:
+        print(f"⚠️ External context registry not found: {registry_path}")
+        return
+
+    for keyword, doc_path in registry.items():
+        if keyword.lower() in prompt.lower():
+            # Use path relative to the preprocessing directory
+            import os
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            full_doc_path = os.path.join(current_dir, doc_path)
+            full_path = f"/workspace/{doc_path}"
+            try:
+                with open(full_doc_path, "r") as doc_file:
+                    content = doc_file.read()
+                    code_map[full_path] = content
+                    print(f"🧠 Injected external context for: {keyword} → {doc_path}")
+            except FileNotFoundError:
+                print(f"⚠️ Missing external doc: {full_doc_path} (skipping)")
+
 def get_priority_score(path: str) -> int:
     """Return the priority score of the file type for sorting."""
     label = classify_file(path)
@@ -45,6 +77,8 @@ def get_priority_score(path: str) -> int:
     
 def classify_file(path: str) -> str:
     path_lower = path.lower()
+    if "/docs/external/" in path_lower:
+        return "External Research"
     if "test" in path_lower or ".test." in path_lower or "_test" in path_lower:
         return "Test File"
     if "login" in path_lower:
@@ -267,6 +301,12 @@ def infer_tech_stack(code_map: Dict[str, str]) -> List[str]:
             stack.add('Tailwind CSS')
 
     return sorted(stack)
+
+def preprocess_codebase_with_context(code_map: Dict[str, str], prompt: str = "") -> str:
+    """Preprocess codebase with optional external context injection based on prompt keywords."""
+    if prompt:
+        inject_external_context(prompt, code_map)
+    return preprocess_codebase(code_map)
 
 def preprocess_codebase(code_map: Dict[str, str]) -> str:
     file_blocks: List[str] = []
