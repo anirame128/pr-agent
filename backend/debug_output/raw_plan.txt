@@ -1,0 +1,22 @@
+<plan>
+<step>
+<action>modify</action>
+<file>user-profile-app/src/app/layout.tsx</file>
+<description>Add inline script to prevent FOUC by setting dark class on html element before hydration, and update CSS variables approach</description>
+</step>
+<step>
+<action>modify</action>
+<file>user-profile-app/src/components/HomeContent.tsx</file>
+<description>Add theme toggle component with localStorage persistence and SSR-safe implementation</description>
+</step>
+<step>
+<action>create</action>
+<file>user-profile-app/src/components/ThemeToggle.tsx</file>
+<description>Create a new client component for theme toggle with proper SSR handling</description>
+</step>
+<step>
+<action>modify</action>
+<file>user-profile-app/src/app/globals.css</file>
+<description>Update CSS variables to use explicit .dark class instead of media query for better control</description>
+</step>
+</plan>

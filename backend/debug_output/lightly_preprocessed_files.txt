@@ -1,0 +1,62 @@
+### FILE: user-profile-app/src/app/globals.css
+```tsx
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+```
+
+
+### FILE: user-profile-app/src/components/HomeContent.tsx
+```tsx
+const montserrat = Montserrat({
+const fadeInUp = {
+const cardHover = {
+export default function HomeContent() {
+const [isMenuOpen, setIsMenuOpen] = useState(false)
+const [isScrolled, setIsScrolled] = useState(false)
+const { scrollY, scrollYProgress } = useScroll()
+const heroY = useTransform(scrollY, [0, 300], [0, 50])
+const scrollTo = (id: string) => {
+const el = document.getElementById(id)
+useEffect(() => {
+const onScroll = () => setIsScrolled(window.scrollY > 10)
+return () => window.removeEventListener('scroll', onScroll)
+useEffect(() => {
+return () => { document.body.style.overflow = '' }
+return (
+```
+
+
+### FILE: user-profile-app/src/app/layout.tsx
+```tsx
+const geistSans = Geist({
+const geistMono = Geist_Mono({
+export const metadata: Metadata = {
+export default function RootLayout({
+return (
+```
+
+
+### FILE: user-profile-app/src/app/page.tsx
+```tsx
+export default async function Home() {
+const supabase = await createClient()
+const { data: { user } } = await supabase.auth.getUser()
+```
